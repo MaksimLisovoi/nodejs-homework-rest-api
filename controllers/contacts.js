@@ -2,6 +2,7 @@ const Contacts = require("../repositories/contacts");
 
 const getAll = async (req, res, next) => {
   try {
+    console.log(req.user);
     const contacts = await Contacts.getAll();
     return res.json({ status: "success", code: 200, data: { contacts } });
   } catch (e) {
@@ -28,6 +29,9 @@ const addContact = async (req, res, next) => {
       .status(201)
       .json({ status: "success", code: 201, data: { contact } });
   } catch (e) {
+    if (e.name === "ValidationError") {
+      e.status = 400;
+    }
     next(e);
   }
 };
