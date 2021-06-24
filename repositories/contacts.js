@@ -4,11 +4,11 @@ const getAll = async (userId, query) => {
   // const result = await Contact.find({ owner: userId });
 
   const {
-    sortrBy,
+    sortBy,
     sortByDesc,
     filter,
     favorite = null,
-    limit = 5,
+    limit = 20,
     offset = 0,
   } = query;
   const optionsSearch = { owner: userId };
@@ -23,7 +23,7 @@ const getAll = async (userId, query) => {
       ...(sortByDesc ? { [`${sortByDesc}`]: -1 } : {}),
     },
     select: filter ? filter.split("|").join(" ") : "",
-    populate: { path: "owner", select: "name email gender" },
+    populate: { path: "owner", select: "name email subscription" },
   });
   return result;
 };

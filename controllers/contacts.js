@@ -1,13 +1,16 @@
 const Contacts = require("../repositories/contacts");
-const { HttpCodes } = require("../helpers/constants");
+const { HttpCode } = require("../helpers/constants");
 
 const getAll = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const contacts = await Contacts.getAll(userId, req.query);
+    const { docs: contacts, ...rest } = await Contacts.getAll(
+      userId,
+      req.query
+    );
     return res.json({
       status: "success",
-      code: HttpCodes.OK,
+      code: HttpCode.OK,
       data: { contacts, ...rest },
     });
   } catch (e) {
@@ -22,13 +25,13 @@ const getContactById = async (req, res, next) => {
     if (contact) {
       return res.json({
         status: "success",
-        code: HttpCodes.OK,
+        code: HttpCode.OK,
         data: { contact },
       });
     }
     return res.json({
       status: "error",
-      code: HttpCodes.NOT_FOUND,
+      code: HttpCode.NOT_FOUND,
       message: "Not found",
     });
   } catch (e) {
@@ -42,7 +45,7 @@ const addContact = async (req, res, next) => {
     const contact = await Contacts.addContact(userId, req.body);
     return res
       .status(201)
-      .json({ status: "success", code: HttpCodes.CREATED, data: { contact } });
+      .json({ status: "success", code: HttpCode.CREATED, data: { contact } });
   } catch (e) {
     if (e.name === "ValidationError") {
       e.status = 400;
