@@ -17,12 +17,12 @@ const register = async (req, res, next) => {
       });
     }
 
-    const { email, subscription } = await Users.create(req.body);
+    const { id, email, subscription } = await Users.create(req.body);
 
     return res.status(HttpCode.CREATED).json({
       status: "success",
       code: HttpCode.CREATED,
-      data: { email, subscription },
+      data: { id, email, subscription },
     });
   } catch (e) {
     next(e);
@@ -31,13 +31,14 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const user = await Users.findByEmail(req.body.email);
-    const isValidPassword = await user?.isValidPassword(req.body.password);
+    const { email, password } = req.body;
+    const user = await Users.findByEmail(email);
+    const isValidPassword = await user?.isValidPassword(password);
 
     if (!user || !isValidPassword) {
-      return res.status(HttpCode.UNAUTHORISED).json({
+      return res.status(HttpCode.UNAUTHORIZED).json({
         status: "error",
-        code: HttpCode.UNAUTHORISED,
+        code: HttpCode.UNAUTHORIZED,
         message: "invalid credentials",
       });
     }
@@ -45,7 +46,11 @@ const login = async (req, res, next) => {
     const payload = { id };
     const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "2h" });
     await Users.updateToken(id, token);
-    return res.json({ status: " succsess", code: 200, data: { token } });
+    return res.json({
+      status: " succsess",
+      code: HttpCode.OK,
+      data: { token },
+    });
   } catch (e) {
     next(e);
   }
