@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-
+const rateLimit = require("express-rate-limit");
+const { limiterApi } = require("./helpers/constants");
 const contactsRouter = require("./routes/api/contacts");
 const usersRouter = require("./routes/api/users");
 
@@ -14,8 +15,9 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: 10000 }));
 
-app.use("/api/users", usersRouter);
-app.use("/api/contacts", contactsRouter);
+app.use("/api/", rateLimit(limiterApi));
+
+app.use("/api/", require("./routes/api"));
 
 app.use((req, res) => {
   res.status(404).json({ status: "error", code: 404, message: "Not found" });
