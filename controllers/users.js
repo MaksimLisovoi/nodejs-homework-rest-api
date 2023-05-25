@@ -3,6 +3,7 @@ const { HttpCode } = require("../helpers/constants");
 const jwt = require("jsonwebtoken");
 
 require("dotenv").config();
+// const UploadAvatarService = require("../services/local-upload");
 const SECRET_KEY = process.env.SECRET_KEY;
 
 const register = async (req, res, next) => {
@@ -17,12 +18,12 @@ const register = async (req, res, next) => {
       });
     }
 
-    const { id, email, subscription } = await Users.create(req.body);
+    const { id, email, subscription, avatar } = await Users.create(req.body);
 
     return res.status(HttpCode.CREATED).json({
       status: "success",
       code: HttpCode.CREATED,
-      data: { id, email, subscription },
+      data: { id, email, subscription, avatar },
     });
   } catch (e) {
     next(e);
@@ -47,7 +48,7 @@ const login = async (req, res, next) => {
     const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "2h" });
     await Users.updateToken(id, token);
     return res.json({
-      status: " succsess",
+      status: "success",
       code: HttpCode.OK,
       data: { token },
     });
@@ -60,10 +61,22 @@ const logout = async (req, res, next) => {
   const id = req.user.id;
   try {
     await Users.updateToken(id, null);
-    const contacts = await Users.getAll();
     return res.status(HttpCode.NO_CONTENT).json({});
   } catch (e) {
     next(e);
+  }
+};
+
+const avatars = async (req, res, next) => {
+  try {
+    const id = req.user.id;
+    const uploads = new UploadAvatarService(process.env.AVATAR_OF_USERS);
+    const avatarUrl = await uploads.saveAvatar({ idUser: id, file: req.file });
+    //TODO need delete old avatar
+    await Users.updateAvatar(id, avatarUrl);
+    res.json({ status: " succsess", code: HttpCode.OK, data: { avatarUrl } });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -71,4 +84,5 @@ module.exports = {
   register,
   login,
   logout,
+  avatars,
 };

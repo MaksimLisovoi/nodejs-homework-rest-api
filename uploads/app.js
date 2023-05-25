@@ -1,14 +1,14 @@
 const express = require("express");
 const cors = require("cors");
-const logger = require("morgan");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const { limiterApi } = require("./helpers/constants");
 
 const app = express();
 
-const formatsLogger = app.get("env") === "development" ? "dev" : "short";
-app.get("env") !== "test" && app.use(logger(formatsLogger));
+// const formatsLogger = app.get("env") === "development" ? "dev" : "short";
+
+// app.use(logger(formatsLogger));
 app.use(helmet());
 app.use(cors());
 app.use(express.json({ limit: 10000 }));
@@ -23,11 +23,13 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   const status = err.status || 500;
-  res.status(status).json({
-    status: status === 500 ? "fail" : "error",
-    code: status,
-    message: err.message,
-  });
+  res
+    .status(status)
+    .json({
+      status: status === 500 ? "fail" : "error",
+      code: status,
+      message: err.message,
+    });
 });
 
 module.exports = app;
